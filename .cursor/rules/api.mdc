@@ -1,0 +1,47 @@
+---
+description: API route rules for Lenar backend handlers
+globs: app/api/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Lenar API Rules
+
+## Route Design
+- Build APIs with Next.js App Router route handlers under `app/api/`.
+- Keep handlers focused on one responsibility per endpoint.
+- Use resource-oriented naming and stable response contracts.
+
+## Validation and Types
+- Validate all request input with Zod before business logic.
+- Reject invalid payloads with clear 4xx responses and actionable error messages.
+- Define typed request/response shapes; avoid `any`.
+
+## Authentication and Authorization
+- Require authenticated users for user-specific endpoints (`lessons`, `tasks`, `progress`).
+- Derive user identity from Supabase auth/session, never from client-submitted user IDs.
+- Enforce row ownership checks before read/write on user-scoped records.
+
+## Data Access (Supabase/Postgres)
+- Centralize Supabase client setup in `lib/supabase.ts`.
+- Follow schema contracts from Technical PRD (`profiles`, `skills`, `lessons`, `user_lessons`, `tasks`, `user_tasks`).
+- Use explicit column selection and predictable ordering for list endpoints.
+
+## Error Handling and Responses
+- Return JSON for both success and failure paths.
+- Use consistent status codes:
+  - `200/201` for success
+  - `400` for validation errors
+  - `401/403` for auth/authz issues
+  - `404` for missing resources
+  - `500` for unexpected failures
+- Avoid leaking internal stack traces or secrets in API responses.
+
+## Security
+- Never expose `SUPABASE_SERVICE_ROLE_KEY` to client bundles or public endpoints.
+- Do not trust client input for privileged fields (`user_id`, role, completion flags).
+- Apply server-side checks for lesson completion and task submission mutations.
+
+## MVP Scope Guardrails
+- For curriculum generation, use templates or simple structured JSON output.
+- Do not implement complex autonomous AI orchestration in MVP.
+- Keep endpoints minimal, predictable, and easy to evolve.

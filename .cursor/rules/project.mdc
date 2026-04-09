@@ -1,0 +1,42 @@
+---
+description: Lenar project implementation rules (Next.js + Supabase MVP)
+alwaysApply: true
+---
+
+# Lenar Project Rules
+
+## Scope and Stack
+- Build with Next.js App Router and TypeScript.
+- Use Supabase for auth, Postgres data, and storage.
+- Prefer Server Components for data fetching; use Client Components only for interactions.
+
+## Architecture Conventions
+- Keep routes under `app/` using route groups: `(auth)` and `(dashboard)`.
+- Place reusable UI in `components/`; keep feature-specific components close to their route when practical.
+- Keep helpers in `lib/` (`supabase.ts`, `auth.ts`, `utils.ts`) and shared types in `types/`.
+- Use hooks in `hooks/` for client-side orchestration only (`useUser`, `useLessons`, `useTasks`).
+
+## Data and API Rules
+- Follow Technical PRD tables: `profiles`, `skills`, `lessons`, `user_lessons`, `tasks`, `user_tasks`.
+- Require auth for user-specific routes (`/api/lessons`, `/api/progress`, task and lesson mutations).
+- Validate API input with Zod before DB writes.
+- Return predictable JSON shapes and explicit error messages.
+
+## UI and UX Rules
+- Use Tailwind CSS and shadcn/ui components as defaults.
+- Keep UI clean, approachable, and productivity-focused (soft spacing, clear hierarchy).
+- Use lucide-react icons for consistency.
+- Ensure forms use React Hook Form + Zod resolver patterns.
+
+## MVP Guardrails
+- Do not implement full autonomous AI curriculum generation in MVP.
+- Use predefined lesson templates or a simple structured JSON generation step.
+- Prioritize delivery order: auth/profile -> skill selection -> curriculum/lessons -> tasks/progress.
+- Keep mobile-specific features and social/community features out of MVP.
+
+## Quality Standards
+- Keep functions small and typed; avoid `any` unless justified.
+- Prefer clear naming and simple abstractions over premature complexity.
+- Handle loading, empty, and error states on dashboard, lessons, and tasks pages.
+- Never expose `SUPABASE_SERVICE_ROLE_KEY` to client-side code.
+

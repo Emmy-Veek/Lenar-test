@@ -1,0 +1,42 @@
+---
+description: Component-specific rules for Lenar React UI
+globs: **/*.{tsx,jsx}
+alwaysApply: false
+---
+
+# Lenar Component Rules
+
+## Component Boundaries
+- Keep presentation components in `components/`; avoid direct DB calls inside UI components.
+- Prefer Server Components for read-heavy views; use Client Components only for interactivity.
+- Mark interactive files with `"use client"` only when required.
+
+## Composition and Reuse
+- Build from shadcn/ui primitives before creating custom low-level controls.
+- Keep components small and single-purpose; extract shared UI when repeated.
+- Prefer prop-driven composition over tightly coupled parent-child logic.
+
+## Props and Types
+- Type all props explicitly with interfaces or type aliases.
+- Avoid `any`; use unions/enums/literals for known states.
+- Keep prop APIs minimal; pass only what the child needs.
+
+## State and Effects
+- Keep local UI state in components; avoid global state unless clearly necessary.
+- Use React Hook Form + Zod for form components and validation flows.
+- Avoid unnecessary `useEffect`; derive values from props/state when possible.
+
+## UX and Accessibility
+- Use semantic HTML and accessible shadcn patterns by default.
+- Always provide labels, helper text, and error messages for form inputs.
+- Handle loading, empty, and error UI states for dashboard, lessons, and tasks.
+
+## Styling
+- Use Tailwind utility classes; keep class strings readable and grouped.
+- Reuse consistent spacing, typography, and card/list patterns across screens.
+- Use `lucide-react` for icons to maintain visual consistency.
+
+## Performance
+- Avoid heavy client-side logic in top-level layout components.
+- Memoize only when profiling indicates repeated expensive renders.
+- Keep lists keyed by stable IDs, never array indices for dynamic lists.
