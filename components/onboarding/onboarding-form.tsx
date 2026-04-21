@@ -48,11 +48,11 @@ export function OnboardingForm() {
       return;
     }
 
-    // Save in background — don't block navigation on DB errors
-    supabase.from("profiles").upsert(
+    const { error: saveError } = await supabase.from("profiles").upsert(
       { id: user.id, goals: skill, availability: { resource_types: selected } },
       { onConflict: "id" }
-    ).then(({ error }) => { if (error) console.error("Profile save error:", error); });
+    );
+    if (saveError) console.error("Profile save error:", saveError);
 
     router.push(`/schedule?skill=${encodeURIComponent(skill)}`);
     router.refresh();

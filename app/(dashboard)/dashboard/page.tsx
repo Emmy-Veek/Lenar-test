@@ -15,11 +15,11 @@ export default async function DashboardPage() {
   const supabase = await createClient();
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-  if (!profile?.full_name?.trim()) {
+  if (!profile?.goals?.trim()) {
     redirect("/onboarding");
   }
   if (!profile.active_skill_id) {
-    redirect("/skills");
+    redirect("/curriculum");
   }
 
   const skillId = profile.active_skill_id;
