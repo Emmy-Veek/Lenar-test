@@ -15,7 +15,7 @@ const resourceTypes = [
 export function OnboardingForm() {
   const router = useRouter();
   const [skill, setSkill] = useState("");
-  const [selected, setSelected] = useState<string[]>(["videos", "courses"]);
+  const [selected, setSelected] = useState<string[]>(["videos"]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowRight, Settings2, Sunrise, Sun, Moon } from "lucide-react";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight, Settings2, Sunrise, Sun, Moon, Check, X } from "lucide-react";
 
 const calendarOptions = [
   {
@@ -83,16 +83,39 @@ const learningWindows = [
   },
 ];
 
-export default function SchedulePage() {
+function ScheduleContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [toggles, setToggles] = useState<Record<string, boolean>>({
     morning: true,
     afternoon: false,
     night: false,
   });
+  const [connectedCalendars, setConnectedCalendars] = useState<string[]>([]);
+  const [showAppleModal, setShowAppleModal] = useState(false);
+
+  useEffect(() => {
+    const calendar = searchParams.get("calendar");
+    const connected = searchParams.get("connected");
+    if (calendar && connected === "true") {
+      setConnectedCalendars((prev) =>
+        prev.includes(calendar) ? prev : [...prev, calendar]
+      );
+    }
+  }, [searchParams]);
 
   function toggle(id: string) {
     setToggles((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  function handleCalendarConnect(id: string) {
+    if (id === "google") {
+      window.location.href = "/api/auth/google-calendar";
+    } else if (id === "notion") {
+      window.location.href = "/api/auth/notion-calendar";
+    } else if (id === "apple") {
+      setShowAppleModal(true);
+    }
   }
 
   return (
@@ -110,15 +133,30 @@ export default function SchedulePage() {
 
         {/* Calendar options */}
         <div className="grid grid-cols-3 gap-3 mb-8">
-          {calendarOptions.map(({ id, label, icon }) => (
-            <button
-              key={id}
-              className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-gray-100 bg-gray-50 py-6 px-4 hover:border-gray-300 transition-colors"
-            >
-              {icon}
-              <span className="text-sm font-semibold text-gray-800 text-center">{label}</span>
-            </button>
-          ))}
+          {calendarOptions.map(({ id, label, icon }) => {
+            const isConnected = connectedCalendars.includes(id);
+            return (
+              <button
+                key={id}
+                onClick={() => handleCalendarConnect(id)}
+                className={`relative flex flex-col items-center justify-center gap-3 rounded-2xl border py-6 px-4 transition-colors ${
+                  isConnected
+                    ? "border-green-500 bg-green-50"
+                    : "border-gray-100 bg-gray-50 hover:border-gray-300"
+                }`}
+              >
+                {isConnected && (
+                  <span className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-0.5">
+                    <Check size={10} />
+                  </span>
+                )}
+                {icon}
+                <span className={`text-sm font-semibold text-center ${isConnected ? "text-green-700" : "text-gray-800"}`}>
+                  {isConnected ? "Connected" : label}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Optimal Learning Windows */}
@@ -150,7 +188,6 @@ export default function SchedulePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-300">{label}</span>
-                  {/* Toggle */}
                   <button
                     type="button"
                     onClick={() => toggle(id)}
@@ -189,6 +226,50 @@ export default function SchedulePage() {
           </div>
         </div>
       </div>
+
+      {/* Apple Calendar Modal */}
+      {showAppleModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-xl relative">
+            <button
+              onClick={() => setShowAppleModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X size={20} />
+            </button>
+            <div className="flex items-center gap-3 mb-4">
+              <svg viewBox="0 0 48 48" className="w-8 h-8 flex-shrink-0">
+                <path fill="#111" d="M35.1 25.5c0-5.1 4.2-7.6 4.4-7.7-2.4-3.5-6.1-4-7.4-4-3.1-.3-6.1 1.8-7.7 1.8-1.6 0-4-.8-6.6-.7-3.3.1-6.4 1.9-8.1 4.9-3.5 6-.9 14.8 2.5 19.7 1.7 2.4 3.6 5 6.2 4.9 2.5-.1 3.4-1.6 6.4-1.6s3.8 1.6 6.4 1.5c2.7 0 4.4-2.4 6-4.8 1.9-2.7 2.7-5.4 2.7-5.5-.1 0-5.2-1.9-5.2-7.5z" />
+                <path fill="#111" d="M29.8 10.4c1.4-1.7 2.3-4 2-6.4-2 .1-4.4 1.3-5.8 3-1.3 1.5-2.4 3.9-2.1 6.2 2.2.2 4.5-1.1 5.9-2.8z" />
+              </svg>
+              <h2 className="text-lg font-bold text-gray-900">Connect Apple Calendar</h2>
+            </div>
+            <p className="text-sm text-gray-500 mb-5 leading-relaxed">
+              Apple Calendar uses CalDAV and doesn't support direct web OAuth. You can connect it via your iCloud account in two ways:
+            </p>
+            <ol className="text-sm text-gray-600 space-y-2 mb-6 list-decimal list-inside">
+              <li>Open <strong>System Settings → Internet Accounts</strong> on your Mac and ensure iCloud Calendar is enabled.</li>
+              <li>Or manage your calendar directly on iCloud.com.</li>
+            </ol>
+            <a
+              href="https://www.icloud.com/calendar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm rounded-2xl px-6 py-4 transition-colors"
+            >
+              Open iCloud Calendar
+            </a>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function SchedulePage() {
+  return (
+    <Suspense>
+      <ScheduleContent />
+    </Suspense>
   );
 }
